@@ -1,0 +1,23 @@
+{
+	"geode": "5.3.0",
+	"gd": {
+		"win": "2.2081"
+	},
+	"id": "hexagon80.svg-converter",
+	"name": "SVG Converter",
+	"version": "0.1.0-beta.1",
+	"developer": "Hexagon80",
+	"description": "Converts SVG files  into objects",
+	"tags": [ "editor", "utility", "offline" ],
+	"settings":{
+		"import":{
+			"type": "keybind",
+			"default":[ "Ctrl+S" ],
+			"name": "Import SVG",
+			"description": "Imports the damn svg"
+		}
+	},
+	"dependencies": {
+		"geode.node-ids": ">=v1.23.1"
+	}
+}

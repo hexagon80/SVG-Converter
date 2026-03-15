@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <rect width="10" height="10"/>
+  <rect x="150" y="70" width="10" height="10"stroke="red" stroke-width="2"/>
+  <circle cx="375" cy="75" r="50" stroke="#7A58FF" stroke-width="46" />
+  <circle cx="575" cy="75" r="50" stroke="pink" stroke-width="0.34" />
+  <circle cx="75" cy="75" r="50"/>
+</svg>
