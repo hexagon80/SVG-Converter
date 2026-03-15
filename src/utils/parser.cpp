@@ -17,10 +17,10 @@ geode::Result<SVG> Parser::Parse(){
     );
     SVG doc;
 
+    if (!image) return Err("Unexpected pointer error on parsing!");
+
     if (!image->shapes)
         return Err("SVG has no shapes");
-
-    if (!image) return Err("Unexpected pointer error on parsing!");
 
     // Those two ensure both the output is not fliped and centered in 0,0.
     const float hw = image->width  * 0.5f;
