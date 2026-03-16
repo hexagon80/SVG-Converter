@@ -11,12 +11,15 @@ class $modify(MyEditorHook, LevelEditorLayer) {
 public:
 
     struct Fields {
+        ListenerHandle importPopupListener;
+        ListenerHandle errorPopupListener;
+        
         bool isPopUpActive = false;
         bool isPickerActive = false;
         size_t placeIndex = 0;
 
         // When creating a bunch of colors, getNextColorID give wrong IDs,
-        // so we initialize with getNextColorID and then sum each NewColor
+        // so we initialize with getNextColorID and then we follow our own count
         int nextColorID = -1;
 
         Parser parser;
@@ -124,7 +127,7 @@ public:
 
         m_fields->isPopUpActive = true;
 
-        auto listener = popup->getListenForClose().listen([this]() {
+        m_fields->importPopupListener  = popup->getListenForClose().listen([this]() {
             m_fields->isPopUpActive = false;
             return ListenerResult::Propagate;
         });
@@ -142,7 +145,7 @@ public:
 
         m_fields->isPopUpActive = true;
 
-        auto handle = popup->getListenForClose().listen([this]() {
+        m_fields->errorPopupListener = popup->getListenForClose().listen([this]() {
             m_fields->isPopUpActive = false;
             return ListenerResult::Propagate;
         });
@@ -172,26 +175,42 @@ public:
 
         // Blocking task for the high-CPU consuptive Parser & Triangulation.
         async::spawn(
-            arc::spawnBlocking<RenderResult>(
-                [parser, renderer]() mutable {
+            arc::spawnBlocking<geode::Result<RenderResult>>(
+                [parser, renderer]() mutable ->  geode::Result<RenderResult> 
+                {
                     auto res = parser.Parse();
-                    if (res.isOk()) renderer.svg = res.unwrap();
+                    if (res.isErr()) 
+                        return Err(gd::string(res.unwrapErr()));
 
-                    return renderer.RenderSVG();
+                    renderer.svg = res.unwrap();
+
+                    return Ok(renderer.RenderSVG());
                 }
             ),
-            [self](RenderResult res) {
+            [self](geode::Result<RenderResult> res) {
                 auto layer = self.lock();
                 if (!layer) return;
-                auto& commands = res.commands;
-                auto& usedColors = res.usedColors;
 
-                if (res.commands.size() > 50000) {
+                if (res.isErr()) {
+                    layer->onErrorPopup(res.unwrapErr());
+                    
+                };
+                auto& render = res.unwrap();
+
+                auto& commands = render.commands;
+                auto& usedColors = render.usedColors;
+
+                if (commands.empty()) {
+                    layer->onErrorPopup("Failed to parse the SVG file. Please check the file format.");
+                    return;
+                }
+
+                if (render.commands.size() > 50000) {
                     layer->onErrorPopup(ERR_TOO_MUCH_OBJECTS);
                     return;
                 };
 
-                if (res.usedColors.size() + layer->getNextColorChannel() > 999) {
+                if (render.usedColors.size() + layer->getNextColorChannel() > 999) {
                     layer->onErrorPopup(ERR_COLOR_LIMIT_REACHED);
                     return;
                 }
@@ -209,7 +228,7 @@ public:
                 }
 
                 // A copy would be titanic, up to 50k commands!
-                layer->m_fields->ObjsToPlace = std::move(res.commands);
+                layer->m_fields->ObjsToPlace = std::move(render.commands);
                 layer->m_fields->placeIndex = 0;
                 layer->m_fields->ObjsPlaced = CCArray::create();
                 layer->m_fields->ObjsPlaced->retain();

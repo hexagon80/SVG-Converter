@@ -7,14 +7,15 @@
 	"name": "SVG Converter",
 	"version": "0.1.0-beta.1",
 	"developer": "Hexagon80",
+	"links": { "source": "https://github.com/hexagon80/SVG-Converter" },
 	"description": "Converts SVG files  into objects",
-	"tags": [ "editor", "utility", "offline" ],
+	"tags": [ "editor", "utility"],
 	"settings":{
 		"import":{
 			"type": "keybind",
 			"default":[ "Ctrl+S" ],
 			"name": "Import SVG",
-			"description": "Imports the damn svg"
+			"description": "Imports the svg"
 		}
 	},
 	"dependencies": {

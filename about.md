@@ -2,7 +2,7 @@
 
 This mod allows you to import **.svg files as objects** directly into the editor of Geometry Dash.
 
-It is specially designed for creators who want to import artwork made in external graphic design software.
+It is made for creators who want to import artwork made in graphic design software.
 
 ---
 
@@ -15,7 +15,7 @@ Press **Ctrl + S** (or change the keybind in settings) to open the import menu.
 3. Adjust the **quality**
 4. Press **Import**
 
-The mod will read the SVG and place the generated objects in the editor.
+The mod will fastly place the objects in the editor.
 
 ---
 
@@ -24,7 +24,7 @@ The mod will read the SVG and place the generated objects in the editor.
 SVG files containing the following elements may produce **bugs or broken import**:
 
 * Unsupported tags such as `image`, `animate`, `switch`
-* **Gradients**
+* **Gradients**, absolutly
 * **Holes** inside shapes (for example text outlines)
 
 Shapes with holes will be imported **without the hole**, filling the entire area.
@@ -44,15 +44,9 @@ This mod is intended for importing **vector artwork**, not assets optimized for 
 
 Those may produce poor results or exceed object limits.
 
-### When generating
-
-**Dont touch anything!** it generates 200 objects per tick,
-wait 5 seconds without touching anything to avoid bugs!
-
 ### Colors
 
-The mod generates the exact colors of the svg. You can modify those channels as normal,
-but naturally, the svg will change.
+The mod generates the exact colors of the svg. You can modify those channels as normal, but naturally, the svg will change.
 
 ### When exporting
 
@@ -70,16 +64,18 @@ After importing, you can safely use:
 * **Warp**
 * **Flip X / Flip Y**
 
-Do **NOT rotate** the imported objects, some objects may disappear.
+<cr>**Do NOT rotate**</c> the imported objects, some objects may disappear.
 
 ### Size Tips
 
-Smaller SVGs usually import more reliably.
-Try importing scaled down SVGs and scaling them up in the editor
+Smaller SVGs usually import cleaner.
+Try importing scaled down SVGs and scaling them up in the editor!
 
 ---
 
 ## Credits
+
+Mod by Hexagon80
 
 ### Libraries
 

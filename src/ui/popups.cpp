@@ -21,8 +21,8 @@ bool ImportPopup::init(Parser parser, Renderer renderer) {
     m_renderer = renderer;
     m_parser.config.ignoreStroke = true;
 
-    m_parser.config.quality = 0;
-    m_renderer.config.quality = 0;
+    m_parser.config.quality = 1;
+    m_renderer.config.quality = 1;
     m_renderer.config.Layer = 0;
     m_parser.config.ignoreStroke = false;
 
@@ -125,7 +125,7 @@ void ImportPopup::onSlider(CCObject*){
     }
     float value = slider->getValue();
 
-    int realValue = std::clamp(static_cast<int>(value * 100.f), 0, 100);
+    int realValue = std::clamp(static_cast<int>(value * 100.f), 1, 100);
 
     text->setString(fmt::format("{}", realValue));
 
@@ -140,6 +140,7 @@ void ImportPopup::onQualityInput(CCObject* sender){
     if (res.isErr()) return;
     float value = res.unwrap();
 
+    if (value < 1) value = 1;
     if (value > 100) return;
 
     m_slider->setValue(value / 100.f);
