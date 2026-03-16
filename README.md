@@ -3,6 +3,10 @@
 This is a Geometry Dash Mod made with [Geode SDK](https://github.com/geode-sdk/geode) that imports `.svg` files to the game as objects.
 Special credit for Allium mod, the main reference for geometry functions that you can find in renderer.cpp
 
+![Screenshot 1](images/screenshot-1.png)
+
+![Screenshot 2](images/screenshot-2.png)
+
 ## Copyright notice
 
 * [Geode SDK: BSL 1.0](https://github.com/geode-sdk/geode/blob/main/LICENSE.txt)

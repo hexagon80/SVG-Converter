@@ -13,6 +13,8 @@
 	"settings":{
 		"import":{
 			"type": "keybind",
+			"category": "editor",
+			"requires-restart": false,
 			"default":[ "Ctrl+S" ],
 			"name": "Import SVG",
 			"description": "Imports the svg"

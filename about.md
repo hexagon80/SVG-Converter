@@ -2,10 +2,6 @@
 
 This mod allows you to import **.svg files as objects** directly into the editor of Geometry Dash.
 
-It is made for creators who want to import artwork made in graphic design software.
-
----
-
 ## Usage
 
 Press **Ctrl + S** (or change the keybind in settings) to open the import menu.
@@ -17,36 +13,22 @@ Press **Ctrl + S** (or change the keybind in settings) to open the import menu.
 
 The mod will fastly place the objects in the editor.
 
----
-
 ## Unsupported Features
-
-SVG files containing the following elements may produce **bugs or broken import**:
 
 * Unsupported tags such as `image`, `animate`, `switch`
 * **Gradients**, absolutly
 * **Holes** inside shapes (for example text outlines)
-
-Shapes with holes will be imported **without the hole**, filling the entire area.
-
----
 
 ### Important Notes
 
 * This mod is currently in **beta**.
 * maximum of **50,000 objects**.
 
-This mod is intended for importing **vector artwork**, not assets optimized for the web such as:
-
-* icons
-* highly optimized SVGs
-* extremely complex files
-
-Those may produce poor results or exceed object limits.
+This mod is intended for importing vector artwork, not assets optimized for the web such as icons
 
 ### Colors
 
-The mod generates the exact colors of the svg. You can modify those channels as normal, but naturally, the svg will change.
+The mod generates the exact colors of the svg. You can modify those channels as usual, but the svg will also change.
 
 ### When exporting
 
@@ -56,6 +38,7 @@ For better results:
 * Avoid optimizations or complex features
 * Use flat colors
 * Avoid gradients and filters
+* Smaller SVGs usually import cleaner. Try importing scaled down SVGs and scaling them up in the editor!
 
 ### Transformations
 
@@ -66,24 +49,13 @@ After importing, you can safely use:
 
 <cr>**Do NOT rotate**</c> the imported objects, some objects may disappear.
 
-### Size Tips
-
-Smaller SVGs usually import cleaner.
-Try importing scaled down SVGs and scaling them up in the editor!
-
----
-
-## Credits
+## Credits & Libraries
 
 Mod by Hexagon80
 
-### Libraries
-
 * **nanosvg** — parsing library
-* [Allium](mod:alk.allium) reference for geometry, and main motivation of the proyect
+* [Allium mod](mod:alk.allium) —reference for geometry, and big motivation for f the proyect
 * **earcut.hpp** — triangulation library
-
-### Assets
 
 Logo taken from: [svgrepo](https://www.svgrepo.com/svg/374110/svg)
 Copyright (c) vscode-icons
