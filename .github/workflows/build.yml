@@ -10,14 +10,9 @@ jobs:
   build:
     strategy:
       fail-fast: false
-      matrix:
-        config:
-        - name: Windows
-          os: windows-latest
-          target: win
 
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    name: Windows
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
