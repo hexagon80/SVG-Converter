@@ -314,7 +314,6 @@ void Renderer::RenderStroke(Path& path, float strokeWidth, int colorKey) {
         obj.scaleX = scaleX;
         obj.scaleY = scaleY;
         obj.colorKey = colorKey;
-        obj.layer = config.Layer;
 
         ToPlace.push_back(obj);
     }

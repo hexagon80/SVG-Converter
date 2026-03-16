@@ -165,7 +165,10 @@ public:
         }
         
         Parser parser = popup->getSettings().first;
-        Renderer renderer = popup->getSettings().second; 
+        Renderer renderer = popup->getSettings().second;
+
+        m_fields->parser = parser;
+        m_fields->renderer = renderer;
 
         popup->close();
 
@@ -304,7 +307,7 @@ public:
                 obj->m_baseColor->m_colorID = it->second;
 
             obj->m_zLayer = ZLayer::B1;
-            obj->m_editorLayer = command.layer;
+            obj->m_editorLayer = m_fields->renderer.config.Layer;
 
             if (m_undoObjects && m_undoObjects->count() > 0) {
                 m_undoObjects->removeLastObject();

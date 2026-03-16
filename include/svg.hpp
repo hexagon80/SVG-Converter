@@ -76,8 +76,6 @@ struct ObjCommand {
     float rotX;
     float rotY;
 
-    uint8_t layer;
-
     uint32_t colorKey;
 };
 
