@@ -158,7 +158,6 @@ public:
 
         auto btn = static_cast<CCMenuItemSpriteExtra*>(sender);
 
-        // Protected
         auto popup = typeinfo_cast<ImportPopup*>(btn->getParent()->getParent());
         if (!popup) {
             log::warn ("error casting!"); return;
@@ -230,7 +229,6 @@ public:
                     layer->m_fields->resolvedColorIDs[key] = id;
                 }
 
-                // A copy would be titanic, up to 50k commands!
                 layer->m_fields->ObjsToPlace = std::move(render.commands);
                 layer->m_fields->placeIndex = 0;
                 layer->m_fields->ObjsPlaced = CCArray::create();
@@ -317,7 +315,6 @@ public:
         }
 
         if (m_fields->placeIndex >= commands.size()) {
-            // continue on next tick
             this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
             groupStickyObjects(m_fields->ObjsPlaced);
             CleanFields();
