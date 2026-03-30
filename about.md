@@ -16,7 +16,7 @@ The mod will fastly place the objects in the editor.
 ## Unsupported Features
 
 * Unsupported tags such as `image`, `animate`, `switch`
-* **Gradients**, absolutly
+* **Gradients**
 * **Holes** inside shapes (for example text outlines)
 
 ### Important Notes
@@ -54,7 +54,7 @@ After importing, you can safely use:
 Mod by Hexagon80
 
 * **nanosvg** — parsing library
-* [Allium mod](mod:alk.allium) —reference for geometry, and big motivation for f the proyect
+* [Allium mod](mod:alk.allium) — reference for geometry, and big motivation for the proyect
 * **earcut.hpp** — triangulation library
 
 Logo taken from: [svgrepo](https://www.svgrepo.com/svg/374110/svg)
