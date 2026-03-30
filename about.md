@@ -24,7 +24,8 @@ The mod will fastly place the objects in the editor.
 * This mod is currently in **beta**.
 * maximum of **50,000 objects**.
 
-This mod is intended for importing vector artwork, not assets optimized for the web such as icons
+This mod is intended for importing vector artwork, not assets optimized for the web such as icons.
+For some unknow reason, apparently generating svgs next to the ground prevent scale reset sometimes.
 
 ### Colors
 

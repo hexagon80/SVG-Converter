@@ -9,11 +9,11 @@ using namespace svg;
 
 class $modify(MyEditorHook, LevelEditorLayer) {
 public:
-
     struct Fields {
         ListenerHandle importPopupListener;
         ListenerHandle errorPopupListener;
-        
+        ListenerHandle* keybindListener;
+    
         bool isPopUpActive = false;
         bool isPickerActive = false;
         size_t placeIndex = 0;
@@ -34,7 +34,8 @@ public:
     bool init(GJGameLevel* level, bool noUI) {
         if (!LevelEditorLayer::init(level, noUI)) return false;
 
-        listenForKeybindSettingPresses("import", [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+        m_fields->keybindListener = listenForKeybindSettingPresses("import", [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+            if (LevelEditorLayer::get() != this) return;
             if (down && !repeat && !(m_fields->isPopUpActive || m_fields->isPickerActive)) {
                 onPickFile(nullptr);
             }
@@ -52,34 +53,30 @@ public:
             {  { "SVG Files", { "*.svg", ".SVG" }} }
         };
 
-        auto self = WeakRef(this);
-
         async::spawn(
             file::pick(
                 file::PickMode::OpenFile,
                 options
         ),
-        [self](Result<std::optional<std::filesystem::path>> result) {
-            auto layer = self.lock();
-            if (!layer) return;
+        [this](Result<std::optional<std::filesystem::path>> result) {
             if (result.isOk()) {
                 auto opt = result.unwrap();
                 if (opt) {
 
                     auto file = opt.value();
 
-                    layer->m_fields->isPickerActive = false;
-                    
-                    layer->onImportPopup(file);
+                    m_fields->isPickerActive = false;
+
+                    onImportPopup(file);
                 } else {
                     // User cancelled the dialog
                     log::info("User cancelled!");
-                    layer->m_fields->isPickerActive = false;
+                    m_fields->isPickerActive = false;
                 }
             }
             else {
                 log::error("fatal error: unable to pick file!");
-                layer->m_fields->isPickerActive = false;
+                m_fields->isPickerActive = false;
                 return;
             }
         });
@@ -173,15 +170,13 @@ public:
 
         renderer.config.position = getCurrentPos();
 
-        auto self = WeakRef(this);
-
         // Blocking task for the high-CPU consuptive Parser & Triangulation.
         async::spawn(
             arc::spawnBlocking<geode::Result<RenderResult>>(
                 [parser, renderer]() mutable ->  geode::Result<RenderResult> 
                 {
                     auto res = parser.Parse();
-                    if (res.isErr()) 
+                    if (res.isErr())
                         return Err(gd::string(res.unwrapErr()));
 
                     renderer.svg = res.unwrap();
@@ -189,13 +184,12 @@ public:
                     return Ok(renderer.RenderSVG());
                 }
             ),
-            [self](geode::Result<RenderResult> res) {
-                auto layer = self.lock();
-                if (!layer) return;
+            [this](geode::Result<RenderResult> res) {
+                if (LevelEditorLayer::get() != this) return;
 
                 if (res.isErr()) {
-                    layer->onErrorPopup(res.unwrapErr());
-                    
+                   onErrorPopup(res.unwrapErr());
+                    return;
                 };
                 auto& render = res.unwrap();
 
@@ -203,37 +197,38 @@ public:
                 auto& usedColors = render.usedColors;
 
                 if (commands.empty()) {
-                    layer->onErrorPopup("Failed to parse the SVG file. Please check the file format.");
+                    onErrorPopup("Failed to parse the SVG file. Please check the file format.");
                     return;
                 }
 
                 if (render.commands.size() > 50000) {
-                    layer->onErrorPopup(ERR_TOO_MUCH_OBJECTS);
+                    onErrorPopup(ERR_TOO_MUCH_OBJECTS);
                     return;
                 };
 
-                if (render.usedColors.size() + layer->getNextColorChannel() > 999) {
-                    layer->onErrorPopup(ERR_COLOR_LIMIT_REACHED);
+                if (render.usedColors.size() + getNextColorChannel() > 999) {
+                    onErrorPopup(ERR_COLOR_LIMIT_REACHED);
                     return;
                 }
 
-                layer->m_fields->resolvedColorIDs.clear();
-                layer->m_fields->resolvedColorIDs.reserve(usedColors.size());
-                layer->m_fields->nextColorID = layer->getNextColorChannel();
+                m_fields->resolvedColorIDs.clear();
+                m_fields->resolvedColorIDs.reserve(usedColors.size());
+                m_fields->nextColorID = getNextColorChannel();
 
                 for (auto key : usedColors) {
                     auto color = UnpackColor(key);
 
-                    int id = layer->newColor(ccc3(color.r, color.g, color.b));
+                    int id = newColor(ccc3(color.r, color.g, color.b));
 
-                    layer->m_fields->resolvedColorIDs[key] = id;
+                    m_fields->resolvedColorIDs[key] = id;
                 }
 
-                layer->m_fields->ObjsToPlace = std::move(render.commands);
-                layer->m_fields->placeIndex = 0;
-                layer->m_fields->ObjsPlaced = CCArray::create();
-                layer->m_fields->ObjsPlaced->retain();
-                layer->schedule(schedule_selector(MyEditorHook::PlaceObjects));
+                m_fields->ObjsToPlace = std::move(render.commands);
+                m_fields->placeIndex = 0;
+                m_fields->ObjsPlaced = CCArray::create();
+                m_fields->ObjsPlaced->retain();
+                unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+                schedule(schedule_selector(MyEditorHook::PlaceObjects));
             }
         );
     }
@@ -287,10 +282,12 @@ public:
             // Prevent scale reset on all objects
             if (command.scaleX < 0.001f || command.scaleY < 0.001f) continue;
 
-            auto obj = this->createObject(command.key, command.pos, true);
+            auto obj = createObject(command.key, command.pos, true);
+
             if (!obj) {
                 // This one might be caused beacuse of limit object reached
                 this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+                CleanFields();
                 onErrorPopup(ERR_UNKNOW);
                 return;
             };
@@ -302,7 +299,7 @@ public:
 
             auto it = m_fields->resolvedColorIDs.find(command.colorKey);
             if (it != m_fields->resolvedColorIDs.end() && obj->m_baseColor)
-                obj->m_baseColor->m_colorID = it->second;
+                obj->m_baseColor->m_colorID = it->second; 
 
             obj->m_zLayer = ZLayer::B1;
             obj->m_editorLayer = m_fields->renderer.config.Layer;
@@ -333,5 +330,19 @@ public:
         m_fields->resolvedColorIDs.clear();
         m_fields->placeIndex = 0;
         m_fields->nextColorID = -1;
+    }
+
+    void onExit() override {
+        CleanFields();
+        this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+        
+        if (m_fields->keybindListener){
+            m_fields->keybindListener->destroy();
+            m_fields->keybindListener = nullptr;
+        }
+        m_fields->errorPopupListener.destroy();
+        m_fields->importPopupListener.destroy();
+
+        LevelEditorLayer::onExit();
     }
 };
