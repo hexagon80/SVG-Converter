@@ -61,7 +61,7 @@ struct Parser{
 
 struct RenderOptions {
     float quality;
-    unsigned int Layer;
+    short Layer;
     CCPoint position = {0.f, 0.f};
 };
 

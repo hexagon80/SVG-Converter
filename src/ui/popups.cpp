@@ -152,9 +152,9 @@ void ImportPopup::onQualityInput(CCObject* sender){
 void ImportPopup::onLayerInput(CCObject* sender){
     if (sender != m_layerInput) return;
 
-    auto res = utils::numFromString<int>(m_layerInput->getString());
+    auto res = utils::numFromString<short>(m_layerInput->getString());
     if (res.isErr()) return;
-    int value = res.unwrap();
+    short value = res.unwrap();
 
     m_renderer.config.Layer = value;
 }

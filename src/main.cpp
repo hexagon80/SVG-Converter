@@ -17,13 +17,11 @@ public:
         bool isPopUpActive = false;
         bool isPickerActive = false;
         size_t placeIndex = 0;
+        short placeLayer = 0;
 
         // When creating a bunch of colors, getNextColorID give wrong IDs,
         // so we initialize with getNextColorID and then we follow our own count
         int nextColorID = -1;
-
-        Parser parser;
-        Renderer renderer;
 
         CCArray* ObjsPlaced = nullptr;
 
@@ -151,8 +149,6 @@ public:
     void Import(CCObject* sender){
         log::info ("importing svg...");
 
-        m_fields->isPopUpActive = false;
-
         auto btn = static_cast<CCMenuItemSpriteExtra*>(sender);
 
         auto popup = typeinfo_cast<ImportPopup*>(btn->getParent()->getParent());
@@ -163,10 +159,11 @@ public:
         Parser parser = popup->getSettings().first;
         Renderer renderer = popup->getSettings().second;
 
-        m_fields->parser = parser;
-        m_fields->renderer = renderer;
+        m_fields->placeLayer = renderer.config.Layer;
 
         popup->close();
+
+        m_fields->isPopUpActive = false;
 
         renderer.config.position = getCurrentPos();
 
@@ -302,7 +299,7 @@ public:
                 obj->m_baseColor->m_colorID = it->second; 
 
             obj->m_zLayer = ZLayer::B1;
-            obj->m_editorLayer = m_fields->renderer.config.Layer;
+            obj->m_editorLayer = m_fields->placeLayer;
 
             if (m_undoObjects && m_undoObjects->count() > 0) {
                 m_undoObjects->removeLastObject();
@@ -325,9 +322,8 @@ public:
             m_fields->ObjsPlaced = nullptr;
         }
         m_fields->ObjsToPlace.clear();
-        m_fields->parser = Parser{};
-        m_fields->renderer = Renderer{};
         m_fields->resolvedColorIDs.clear();
+        m_fields->placeLayer = 0;
         m_fields->placeIndex = 0;
         m_fields->nextColorID = -1;
     }
@@ -335,7 +331,7 @@ public:
     void onExit() override {
         CleanFields();
         this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
-        
+
         if (m_fields->keybindListener){
             m_fields->keybindListener->destroy();
             m_fields->keybindListener = nullptr;
