@@ -12,8 +12,9 @@ public:
     struct Fields {
         ListenerHandle importPopupListener;
         ListenerHandle errorPopupListener;
-        ListenerHandle* keybindListener;
-    
+
+        async::TaskHolder<geode::Result<RenderResult>> asyncListener; // importing async
+
         bool isPopUpActive = false;
         bool isPickerActive = false;
         size_t placeIndex = 0;
@@ -32,16 +33,19 @@ public:
     bool init(GJGameLevel* level, bool noUI) {
         if (!LevelEditorLayer::init(level, noUI)) return false;
 
-        m_fields->keybindListener = listenForKeybindSettingPresses("import", [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-            if (LevelEditorLayer::get() != this) return;
-            if (down && !repeat && !(m_fields->isPopUpActive || m_fields->isPickerActive)) {
-                onPickFile(nullptr);
+        this->addEventListener(
+            KeybindSettingPressedEventV3(Mod::get(), "import"),
+            [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+                if (LevelEditorLayer::get() != this) return;
+                if (down && !repeat) {
+                    onPickFile();
+                }
             }
-        });
+        );
         return true;
     }
 
-    void onPickFile(CCObject*){
+    void onPickFile(){
         if (m_fields->isPickerActive || m_fields->isPopUpActive) return;
 
         m_fields->isPickerActive = true;
@@ -57,24 +61,22 @@ public:
                 options
         ),
         [this](Result<std::optional<std::filesystem::path>> result) {
+            m_fields->isPickerActive = false;
             if (result.isOk()) {
                 auto opt = result.unwrap();
                 if (opt) {
 
                     auto file = opt.value();
 
-                    m_fields->isPickerActive = false;
-
                     onImportPopup(file);
                 } else {
                     // User cancelled the dialog
                     log::info("User cancelled!");
-                    m_fields->isPickerActive = false;
+                    return;
                 }
             }
             else {
                 log::error("fatal error: unable to pick file!");
-                m_fields->isPickerActive = false;
                 return;
             }
         });
@@ -91,7 +93,6 @@ public:
         auto popup = ImportPopup::create(p, r);
 
         if (!popup) {
-            m_fields->isPopUpActive = false;
             return;
         }
 
@@ -168,7 +169,7 @@ public:
         renderer.config.position = getCurrentPos();
 
         // Blocking task for the high-CPU consuptive Parser & Triangulation.
-        async::spawn(
+        m_fields->asyncListener.spawn(
             arc::spawnBlocking<geode::Result<RenderResult>>(
                 [parser, renderer]() mutable ->  geode::Result<RenderResult> 
                 {
@@ -231,22 +232,11 @@ public:
     }
 
     CCPoint getCurrentPos(){
-        auto main = this->getChildByID("main-node");
-        if (!main) {
-            log::warn("main-node not found!");
-            return {0,0};
-        }
-        auto node = main->getChildByID("batch-layer");
-        if (!node) {
-            log::warn("batch-layer not found!");
-            return {0,0};
-        }
-
         auto winSize = CCDirector::sharedDirector()->getWinSize();
 
         CCPoint center = {winSize.width / 2, winSize.height / 2};
 
-        CCPoint worldPos = node->convertToNodeSpace(center);
+        CCPoint worldPos = m_objectLayer->convertToNodeSpace(center);
 
         return worldPos;
     }
@@ -321,23 +311,17 @@ public:
             m_fields->ObjsPlaced->release();
             m_fields->ObjsPlaced = nullptr;
         }
-        m_fields->ObjsToPlace.clear();
-        m_fields->resolvedColorIDs.clear();
+        if (!m_fields->ObjsToPlace.empty()) m_fields->ObjsToPlace.clear();
+        if (!m_fields->resolvedColorIDs.empty()) m_fields->resolvedColorIDs.clear();
         m_fields->placeLayer = 0;
         m_fields->placeIndex = 0;
         m_fields->nextColorID = -1;
     }
 
     void onExit() override {
+        m_fields->asyncListener.cancel();
         CleanFields();
         this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
-
-        if (m_fields->keybindListener){
-            m_fields->keybindListener->destroy();
-            m_fields->keybindListener = nullptr;
-        }
-        m_fields->errorPopupListener.destroy();
-        m_fields->importPopupListener.destroy();
 
         LevelEditorLayer::onExit();
     }

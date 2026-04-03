@@ -60,7 +60,7 @@ bool ImportPopup::init(Parser parser, Renderer renderer) {
     this->addChild(LayerInput);
 
     auto QualityInput = TextInput::create(50, "", "bigFont.fnt");
-    QualityInput->setString("0");
+    QualityInput->setString("1");
     QualityInput->setCallbackEnabled(true);
     QualityInput->setFilter("0123456789");
     QualityInput->setCallback([this, QualityInput](std::string const& text) {
@@ -96,7 +96,7 @@ bool ImportPopup::init(Parser parser, Renderer renderer) {
         this,
         menu_selector(ImportPopup::onSlider)
     );
-    qualitySlider->setValue(0);
+    qualitySlider->setValue(0.01f);
     qualitySlider->setPosition({180.f, 150.f});
     m_slider = qualitySlider;
     generalMenu->addChild(qualitySlider);
