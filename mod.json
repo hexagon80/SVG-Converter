@@ -5,7 +5,7 @@
 	},
 	"id": "hexagon80.svg-converter",
 	"name": "SVG Converter",
-	"version": "0.1.0-beta.2",
+	"version": "0.1.0-beta.3",
 	"developer": "Hexagon80",
 	"links": { "source": "https://github.com/hexagon80/SVG-Converter" },
 	"description": "Converts SVG files  into objects",
