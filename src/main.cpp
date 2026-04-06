@@ -30,6 +30,15 @@ public:
 
         std::vector<ObjCommand> ObjsToPlace;
         std::unordered_map<uint32_t, int> resolvedColorIDs;
+
+        ~Fields() {
+            if (ObjsPlaced) {
+                ObjsPlaced->release();
+                ObjsPlaced = nullptr;
+            }
+            if (!ObjsToPlace.empty()) ObjsToPlace.clear();
+            if (!resolvedColorIDs.empty()) resolvedColorIDs.clear();
+        }
     };
 
     bool init(GJGameLevel* level, bool noUI) {
@@ -318,13 +327,5 @@ public:
         m_fields->placeLayer = 0;
         m_fields->placeIndex = 0;
         m_fields->nextColorID = -1;
-    }
-
-    void onExit() override {
-        m_fields->asyncListener.cancel();
-        CleanFields();
-        this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
-
-        LevelEditorLayer::onExit();
     }
 };
