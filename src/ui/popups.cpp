@@ -1,6 +1,7 @@
 #include <popups.hpp>
 
 using namespace svg;
+using namespace geode::prelude;
 
 ImportPopup* ImportPopup::create(Parser parser, Renderer renderer){
     auto ret = new ImportPopup;

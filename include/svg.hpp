@@ -2,21 +2,19 @@
 
 #include <Geode/Geode.hpp>
 
-using namespace geode::prelude;
-
 namespace svg {
 
 // If simplier than cubic will be 0
 struct Curve{
-    CCPoint p0;
-    CCPoint p1;
-    CCPoint p2;
-    CCPoint p3;
+    cocos2d::CCPoint p0;
+    cocos2d::CCPoint p1;
+    cocos2d::CCPoint p2;
+    cocos2d::CCPoint p3;
 };
 
 struct Path{
     std::vector<Curve> curves;
-    std::vector<CCPoint> points;
+    std::vector<cocos2d::CCPoint> points;
 
     bool closed;
 
@@ -24,11 +22,11 @@ struct Path{
     void pointify(double roughness);
 
     // Vector of triangles, triangulated by earcut.hpp
-    std::vector<std::array<CCPoint, 3>> Earcut();
+    std::vector<std::array<cocos2d::CCPoint, 3>> Earcut();
 
     Path() = default;
-    Path(std::vector<CCPoint> p) : points(p), closed(true) {};
-    Path(std::vector<CCPoint> p, bool closed) : points(p), closed(closed) {};
+    Path(std::vector<cocos2d::CCPoint> p) : points(p), closed(true) {};
+    Path(std::vector<cocos2d::CCPoint> p, bool closed) : points(p), closed(closed) {};
 };
 
 // Based on Allium's Ramer–Douglas–Peucker algorithm
@@ -62,13 +60,13 @@ struct Parser{
 struct RenderOptions {
     float quality;
     short Layer;
-    CCPoint position = {0.f, 0.f};
+    cocos2d::CCPoint position = {0.f, 0.f};
 };
 
 struct ObjCommand {
     uint16_t key;
 
-    CCPoint pos;
+    cocos2d::CCPoint pos;
 
     float scaleX;
     float scaleY;
@@ -97,22 +95,22 @@ struct Renderer{
 
     void RenderFill(Path& path, int colorKey);
     
-    void RenderTriangle(std::array<CCPoint, 3>& pts, int colorKey);
+    void RenderTriangle(std::array<cocos2d::CCPoint, 3>& pts, int colorKey);
 
     void RenderStroke(Path& path, float strokeWidth, int colorKey);
 
-    uint32_t NewColor(_ccColor3B color);
+    uint32_t NewColor(cocos2d::_ccColor3B color);
 
     // Unpacks a nanosvg color, packed 0xAABBGGRR
-    static ccColor4B UnpackColor(unsigned int color);
+    static cocos2d::ccColor4B UnpackColor(unsigned int color);
 
-    static float MiterExtension(const CCPoint& dir0, const CCPoint& dir1, float halfWidth);
+    static float MiterExtension(const cocos2d::CCPoint& dir0, const cocos2d::CCPoint& dir1, float halfWidth);
 
-    static float AngleTo(CCPoint const& a, CCPoint const& b);
+    static float AngleTo(cocos2d::CCPoint const& a, cocos2d::CCPoint const& b);
 };
 
-int packColor(ccColor3B c);
+int packColor(cocos2d::ccColor3B c);
 
-ccColor3B UnpackColor(uint32_t c);
+cocos2d::ccColor3B UnpackColor(uint32_t c);
 
 } //namespace svg

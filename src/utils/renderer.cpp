@@ -2,6 +2,7 @@
 #include <earcut.hpp>
 #include <agg_curves.h>
 
+using namespace geode::prelude;
 using namespace svg;
 
 // Moved here for clarity, all the geomety functions

@@ -3,9 +3,7 @@
 #include <Geode/Geode.hpp>
 #include <svg.hpp>
 
-using namespace geode::prelude;
-
-class ImportPopup : public Popup {
+class ImportPopup : public geode::Popup {
 public:
     static ImportPopup* create(svg::Parser parser, svg::Renderer renderer);
 
@@ -20,8 +18,8 @@ protected:
     svg::Renderer m_renderer;
 
     CCMenuItemToggler* m_toggle;
-    TextInput* m_layerInput;
-    TextInput* m_qualityInput;
+    geode::TextInput* m_layerInput;
+    geode::TextInput* m_qualityInput;
     Slider* m_slider;
 
     bool init(svg::Parser parser, svg::Renderer renderer);
@@ -32,11 +30,11 @@ protected:
     void onLayerInput(CCObject*);
 };
 
-class ErrorPopup : public Popup {
+class ErrorPopup : public geode::Popup {
 public:
     static ErrorPopup* create(const gd::string& str);
     
-    CloseEvent getListenForClose();
+    ImportPopup::CloseEvent getListenForClose();
 
 private:
     gd::string m_text = "";
