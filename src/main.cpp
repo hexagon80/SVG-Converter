@@ -38,6 +38,7 @@ public:
             }
             if (!ObjsToPlace.empty()) ObjsToPlace.clear();
             if (!resolvedColorIDs.empty()) resolvedColorIDs.clear();
+            if (asyncListener.isPending()) asyncListener.cancel();
         }
     };
 
@@ -165,9 +166,10 @@ public:
 
         auto popup = typeinfo_cast<ImportPopup*>(btn->getParent()->getParent());
         if (!popup) {
-            log::warn ("error casting!"); return;
+            log::warn ("error casting!"); 
+            return;
         }
-        
+
         Parser parser = popup->getSettings().first;
         Renderer renderer = popup->getSettings().second;
 
@@ -197,7 +199,7 @@ public:
                 if (LevelEditorLayer::get() != this) return;
 
                 if (res.isErr()) {
-                   onErrorPopup(res.unwrapErr());
+                    onErrorPopup(res.unwrapErr());
                     return;
                 };
                 auto& render = res.unwrap();
@@ -215,7 +217,7 @@ public:
                     return;
                 };
 
-                if (render.usedColors.size() + getNextColorChannel() > 999) {
+                if (usedColors.size() + getNextColorChannel() > 999) {
                     onErrorPopup(ERR_COLOR_LIMIT_REACHED);
                     return;
                 }
@@ -236,7 +238,6 @@ public:
                 m_fields->placeIndex = 0;
                 m_fields->ObjsPlaced = CCArray::create();
                 m_fields->ObjsPlaced->retain();
-                unschedule(schedule_selector(MyEditorHook::PlaceObjects));
                 schedule(schedule_selector(MyEditorHook::PlaceObjects));
             }
         );
@@ -271,6 +272,13 @@ public:
 
     // Places a chunk of 200 objects per tick
     void PlaceObjects(float dt) {
+        // LeL is alive while transitioning, wich lets PlaceObjects
+        // continue for some ticks, and places objects but doesn't saves them, wich is risky ig.
+        if (CCDirector::get()->getIsTransitioning()) {
+            unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+            return;
+        }
+
         constexpr int PER_TICK = 200;
         const auto& commands = m_fields->ObjsToPlace;
 
@@ -284,8 +292,7 @@ public:
 
             if (!obj) {
                 // This one might be caused beacuse of limit object reached
-                this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
-                CleanFields();
+                unschedule(schedule_selector(MyEditorHook::PlaceObjects));
                 onErrorPopup(ERR_UNKNOW);
                 return;
             };
@@ -310,7 +317,7 @@ public:
         }
 
         if (m_fields->placeIndex >= commands.size()) {
-            this->unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+            unschedule(schedule_selector(MyEditorHook::PlaceObjects));
             groupStickyObjects(m_fields->ObjsPlaced);
             CleanFields();
             log::info("finished!");
