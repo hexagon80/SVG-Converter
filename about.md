@@ -45,8 +45,9 @@ For better results:
 
 After importing, you can safely use:
 
+* **Move**
 * **Warp**
-* **Flip X / Flip Y**
+* **Flip X / Flip Y (but not too small!)**
 
 <cr>**Do NOT rotate**</c> the imported objects, some objects may disappear.
 

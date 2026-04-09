@@ -38,7 +38,7 @@ public:
             }
             if (!ObjsToPlace.empty()) ObjsToPlace.clear();
             if (!resolvedColorIDs.empty()) resolvedColorIDs.clear();
-            if (asyncListener.isPending()) asyncListener.cancel();
+            asyncListener.cancel();
         }
     };
 

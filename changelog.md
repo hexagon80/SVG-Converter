@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-beta.4
+
+- fixed schedule while exited editor, for debugging.
+- improved code safety
+
 ## 0.1.0-beta.3
 
 - fixed quality not showing the real default quality
