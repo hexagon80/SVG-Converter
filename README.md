@@ -1,5 +1,10 @@
 # SVG Converter
 
+![Mod Version](https://api.geode-sdk.org/v1/mods/hexagon80.svg-converter/status_badge?stat=version)
+![Downloads](https://api.geode-sdk.org/v1/mods/hexagon80.svg-converter/status_badge?stat=downloads)
+![GD Version](https://api.geode-sdk.org/v1/mods/hexagon80.svg-converter/status_badge?stat=gd_version)
+![Geode Version](https://api.geode-sdk.org/v1/mods/hexagon80.svg-converter/status_badge?stat=geode_version)
+
 This is a Geometry Dash Mod made with [Geode SDK](https://github.com/geode-sdk/geode) that imports `.svg` files to the game as objects.
 Special credit for Allium mod, the main reference for geometry functions that you can find in renderer.cpp
 
