@@ -57,8 +57,8 @@ RenderResult Renderer::RenderSVG(){
             auto stroke = UnpackColor(shape.strokeColor);
                 if (stroke.a == 0) shape.hasStroke = false;
 
-            uint32_t fillKey;
-            uint32_t strokeKey;
+            uint32_t fillKey = 0;
+            uint32_t strokeKey = 0;
 
             if (shape.hasFill)
                 fillKey = NewColor(ccc3(fill.r, fill.g, fill.b));
@@ -66,18 +66,24 @@ RenderResult Renderer::RenderSVG(){
             if (shape.hasStroke)
                 strokeKey = NewColor(ccc3(stroke.r, stroke.g, stroke.b));
 
-            for (auto& path : shape.paths){
+            Mpoly = shape.BuildMultiPolygon(detail);
+
+            if (shape.hasFill) {
+                for (auto& poly : Mpoly) {
+                    auto tris = TriangulatePolygon(poly);
+
+                    for (auto& tri : tris)
+                        RenderTriangle(tri, fillKey);
+                }
+            }
+
+            for (auto& path : shape.paths) {
+                if (!shape.hasStroke) continue;
+
                 path.pointify(detail);
-
-                if (path.points.size() < 2) continue;
-
                 path.simplify(1.f / detail);
 
-                if (shape.hasFill)
-                    RenderFill(path, fillKey);
-
-                if (shape.hasStroke)
-                    RenderStroke(path, shape.strokeWidth, strokeKey);
+                RenderStroke(path, shape.strokeWidth, strokeKey);
             }
         }
         return {ToPlace, usedColors};
@@ -154,42 +160,108 @@ void svg::simplifyPoints(std::vector<CCPoint> &points, float threshold){
     points = std::move(left);
 }
 
-void Renderer::RenderFill(Path &path, int colorKey) {
-    if (path.points.size() < 2) return;
+BoostMultiPolygon Shape::BuildMultiPolygon(float detail) {
+    std::vector<BoostRing> rings;
+    for (auto& path : paths) {
+        if (path.points.empty()) {
+            path.pointify(detail);
+            path.simplify(1.f / detail);
+        }
 
-    for (auto& Triangle : path.Earcut()){
-        RenderTriangle(Triangle, colorKey);
+        if (path.points.size() < 3) continue;
+
+        BoostRing ring;
+
+        for (auto& p : path.points)
+            ring.push_back(BoostPoint(p.x , p.y));
+
+        auto fixed = geometry::impl::correct(ring, boost::geometry::order_undetermined, 0.f);
+
+        for (auto& [fixedRing, area] : fixed) {
+            boost::geometry::correct(fixedRing);
+
+            if (fixedRing.size() >= 4)
+                rings.push_back(std::move(fixedRing));
+        }
     }
+
+    std::vector<int> depth(rings.size(), 0);
+
+    for (size_t i = 0; i < rings.size(); ++i) {
+        for (size_t j = 0; j < rings.size(); ++j) {
+            if (i == j) continue;
+
+            if (boost::geometry::covered_by(rings[i], rings[j])) {
+                depth[i]++;
+            }
+        }
+    }
+
+    BoostMultiPolygon multiPolygon;
+
+    for (size_t i = 0; i < rings.size(); ++i) {
+        if (depth[i] % 2 != 0) continue;
+
+        BoostPolygon poly;
+        poly.outer() = rings[i];
+
+        for (size_t j = 0; j < rings.size(); ++j) {
+            if (i == j) continue;
+
+            if (depth[j] % 2 == 1 &&
+                boost::geometry::covered_by(rings[j], rings[i])) {
+                poly.inners().push_back(rings[j]);
+            }
+        }
+
+        multiPolygon.push_back(std::move(poly));
+    }
+
+    BoostMultiPolygon fixed;
+    geometry::correct(multiPolygon, fixed, 1e-3);
+
+    return fixed;
 }
 
-using Coord = double;
-using Point = std::array<Coord, 2>;
+using EarcutPoint = std::array<double, 2>;
 
-// The triangulation based on earcut.hpp.
-// Returns a vector of triangles, array of 3 points
-std::vector<std::array<CCPoint, 3>> Path::Earcut(){
-    std::vector<std::array<CCPoint, 3>> triangles;
+std::vector<std::array<CCPoint, 3>> Renderer::TriangulatePolygon(BoostPolygon& poly) {
+    std::vector<std::vector<EarcutPoint>> polygon;
 
-    if (points.size() < 3) return triangles;
+    polygon.emplace_back();
+    auto& outer = poly.outer();
 
-    std::vector<std::vector<Point>> polygon(1);
+    for (size_t i = 0; i < outer.size() - 1; ++i) {
+        polygon.back().push_back({outer[i].x(), outer[i].y()});
+    }
 
-    for (auto& p : points)
-        polygon[0].push_back({static_cast<double>(p.x), static_cast<double>(p.y)});
+    for (auto& hole : poly.inners()) {
+        polygon.emplace_back();
+
+        for (size_t i = 0; i < hole.size() - 1; ++i) {
+            polygon.back().push_back({hole[i].x(), hole[i].y()});
+        }
+    }
 
     auto indices = mapbox::earcut<uint32_t>(polygon);
 
-    for (size_t i = 0; i < indices.size(); i += 3){
-        std::array<CCPoint, 3> array;
+    std::vector<std::array<CCPoint, 3>> tris;
+    std::vector<EarcutPoint> flat;
 
-        array[0] = points[indices[i]];
-        array[1] = points[indices[i + 1]];
-        array[2] = points[indices[i + 2]];
-
-        triangles.push_back(array);
+    for (auto& ring : polygon) {
+        for (auto& p : ring)
+            flat.push_back(p);
     }
 
-    return triangles;
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        CCPoint p0 = { (float)flat[indices[i]][0],     (float)flat[indices[i]][1]   };
+        CCPoint p1 = { (float)flat[indices[i+1]][0],   (float)flat[indices[i+1]][1] };
+        CCPoint p2 = { (float)flat[indices[i+2]][0],   (float)flat[indices[i+2]][1] };
+
+        tris.push_back({p0, p1, p2});
+    }
+
+    return tris;
 }
 
 void Renderer::RenderTriangle(std::array<CCPoint, 3> &pts, int colorKey) {

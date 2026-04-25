@@ -1,18 +1,24 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
+#include <correct.hpp>
+
+using BoostPoint = boost::geometry::model::d2::point_xy<double>;
+using BoostRing = boost::geometry::model::ring<BoostPoint>;
+using BoostPolygon = boost::geometry::model::polygon<BoostPoint>;
+using BoostMultiPolygon = boost::geometry::model::multi_polygon<BoostPolygon>;
 
 namespace svg {
 
 // If simplier than cubic will be 0
-struct Curve{
+struct Curve {
     cocos2d::CCPoint p0;
     cocos2d::CCPoint p1;
     cocos2d::CCPoint p2;
     cocos2d::CCPoint p3;
 };
 
-struct Path{
+struct Path {
     std::vector<Curve> curves;
     std::vector<cocos2d::CCPoint> points;
 
@@ -20,9 +26,6 @@ struct Path{
 
     void simplify(float threshold);
     void pointify(double roughness);
-
-    // Vector of triangles, triangulated by earcut.hpp
-    std::vector<std::array<cocos2d::CCPoint, 3>> Earcut();
 
     Path() = default;
     Path(std::vector<cocos2d::CCPoint> p) : points(p), closed(true) {};
@@ -32,16 +35,18 @@ struct Path{
 // Based on Allium's Ramer–Douglas–Peucker algorithm
 void simplifyPoints(std::vector<cocos2d::CCPoint> &points, float threshold);
 
-struct Shape{
+struct Shape {
     std::vector<Path> paths;
     unsigned int fillColor;
     unsigned int strokeColor;
     float strokeWidth;
     bool hasStroke;
     bool hasFill;
+
+    BoostMultiPolygon BuildMultiPolygon(float detail);
 };
 
-struct SVG{
+struct SVG {
     std::vector<Shape> shapes;
 };
 
@@ -50,7 +55,7 @@ struct ParseOptions {
     bool ignoreStroke;
 };
 
-struct Parser{
+struct Parser {
     std::filesystem::path file;
     ParseOptions config;
 
@@ -90,8 +95,12 @@ struct Renderer{
     std::vector<ObjCommand> ToPlace;
 
     std::unordered_set<uint32_t> usedColors;
+
+    BoostMultiPolygon Mpoly;
     
     RenderResult RenderSVG();
+
+    std::vector<std::array<cocos2d::CCPoint, 3>> TriangulatePolygon(BoostPolygon& poly);
 
     void RenderFill(Path& path, int colorKey);
     
