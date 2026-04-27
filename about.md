@@ -1,57 +1,26 @@
 # SVG Converter
 
-This mod allows you to import **.svg files as objects** directly into the editor of Geometry Dash.
+This mod allows you to import **.svg files as objects**.
+Press Ctrl+I in the editor to choose a file, then open the menu, and press Import.
 
-## Usage
+## Important to know
 
-Press **Ctrl + S** (or change the keybind in settings) to open the import menu.
+This mod is on beta, if you see any errors dm me to @pacoweb. in discord or create an issue on the repository, but please read this first!
 
-1. Select an `.svg` file
-2. Choose the **editor layer**
-3. Adjust the **quality**
-4. Press **Import**
+* This mod was made for own vector artwork, a lot of files found online can break because of optimization, same as tool made (ej. from images) or complex files in general.
+Do not dm me for those.
 
-The mod will fastly place the objects in the editor.
+* The generated objects are a werid for the game because of really small scales, **NEVER rotate or use rotate triggers. Scale triggers also break.** Scale in editor works as long as is not too small. Moves and move triggers work fine (although the amount of objects can cause lag).
 
-## Unsupported Features
+* This mod generates a lot of objects, and it will create 1:1 colors. If your file has 700 colors, that's 700 new colors in your level!
 
-* Unsupported tags such as `image`, `animate`, `switch`
-* **Gradients**
-* **Holes** inside shapes (for example text outlines)
+* Gradients are naturally impossible.
 
-### Important Notes
+* Maximum of 50.000 objects.
 
-* This mod is currently in **beta**.
-* maximum of **50,000 objects**.
+* Recommended to export in a non-optimize, flat format.
 
-This mod is intended for importing vector artwork, not assets optimized for the web such as icons.
-For some unknow reason, apparently generating svgs next to the ground prevent scale reset sometimes.
-
-### Colors
-
-The mod generates the exact colors of the svg. You can modify those channels as usual, but the svg will also change.
-
-### When exporting
-
-For better results:
-
-* Export SVGs in the **simplest possible format**
-* Avoid optimizations or complex features
-* Use flat colors
-* Avoid gradients and filters
-* Smaller SVGs usually import cleaner. Try importing scaled down SVGs and scaling them up in the editor!
-
-### Transformations
-
-After importing, you can safely use:
-
-* **Move**
-* **Warp**
-* **Flip X / Flip Y (but not too small!)**
-
-<cr>**Do NOT rotate**</c> the imported objects, some objects may disappear.
-
-## Credits & Libraries
+## Credits
 
 Mod by Hexagon80
 

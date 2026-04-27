@@ -15,7 +15,7 @@
 			"type": "keybind",
 			"category": "editor",
 			"requires-restart": false,
-			"default":[ "Ctrl+S" ],
+			"default":[ "Ctrl+I" ],
 			"name": "Import SVG",
 			"description": "Imports the svg"
 		}
