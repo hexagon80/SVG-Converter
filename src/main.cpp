@@ -108,7 +108,7 @@ public:
             return;
         }
 
-        popup->setID("import-popup");
+        popup->setID("import-popup"_spr);
 
         popup->m_noElasticity = true;
 
@@ -238,6 +238,15 @@ public:
                 m_fields->placeIndex = 0;
                 m_fields->ObjsPlaced = CCArray::create();
                 m_fields->ObjsPlaced->retain();
+
+                auto bar = ProgressBar::create();
+                bar->setZOrder(101);
+                bar->setPosition({280.f, 120.f});
+                bar->setFillColor({0, 140, 255});
+                bar->setID("progress-bar"_spr);
+                bar->setAnchorPoint({0.5f, 0.5f});
+                this->addChild(bar);
+
                 schedule(schedule_selector(MyEditorHook::PlaceObjects));
             }
         );
@@ -270,7 +279,7 @@ public:
         return nextID;
     }
 
-    // Places a chunk of 200 objects per tick
+    // Places a chunk of objects per tick
     void PlaceObjects(float dt) {
         // LeL is alive while transitioning, wich lets PlaceObjects
         // continue for some ticks, and places objects but doesn't saves them, wich is risky ig.
@@ -279,8 +288,10 @@ public:
             return;
         }
 
-        constexpr int PER_TICK = 200;
+        const int PER_TICK = Mod::get()->getSettingValue<int>("speed");
         const auto& commands = m_fields->ObjsToPlace;
+
+        auto bar = static_cast<ProgressBar*>(this->getChildByID("progress-bar"_spr));
 
         for (int i = 0; i < PER_TICK && m_fields->placeIndex < commands.size(); i++) {
             auto& command = commands[m_fields->placeIndex++];
@@ -293,6 +304,7 @@ public:
             if (!obj) {
                 // This one might be caused beacuse of limit object reached
                 unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+                bar->removeFromParent();
                 onErrorPopup(ERR_UNKNOW);
                 return;
             };
@@ -314,12 +326,14 @@ public:
             }
 
             m_fields->ObjsPlaced->addObject(obj);
+            bar->updateProgress((float)m_fields->placeIndex / commands.size() * 100.0f);
         }
 
         if (m_fields->placeIndex >= commands.size()) {
             unschedule(schedule_selector(MyEditorHook::PlaceObjects));
             groupStickyObjects(m_fields->ObjsPlaced);
             CleanFields();
+            bar->removeFromParent();
             log::info("finished!");
         }
     }

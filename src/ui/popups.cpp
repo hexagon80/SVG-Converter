@@ -43,7 +43,7 @@ bool ImportPopup::init(Parser parser, Renderer renderer) {
     this->addChild(QualityText);
 
     auto LayerText = CCLabelBMFont::create("Layer", "bigFont.fnt");
-    LayerText->setPosition({240.f, 85.f});
+    LayerText->setPosition({240.f, 115.f});
     LayerText->setScale(0.975f);
     this->addChild(LayerText);
 
@@ -51,7 +51,7 @@ bool ImportPopup::init(Parser parser, Renderer renderer) {
     LayerInput->setString("0");
     LayerInput->setCallbackEnabled(true);
     LayerInput->setFilter("0123456789");
-    LayerInput->setPosition({330.f, 80.f});
+    LayerInput->setPosition({330.f, 110.f});
     LayerInput->setScale(0.7f);
     this->m_layerInput = LayerInput;
     LayerInput->setCallback([this](std::string const& text) {
@@ -59,6 +59,12 @@ bool ImportPopup::init(Parser parser, Renderer renderer) {
     });
 
     this->addChild(LayerInput);
+
+    auto Warning = CCLabelBMFont::create("Please read the description before using the mod!", "bigFont.fnt");
+    Warning->setPosition({280.f, 65.f});
+    Warning->setScale(0.35f);
+    Warning->setColor({255, 0, 0});
+    this->addChild(Warning);
 
     auto QualityInput = TextInput::create(50, "", "bigFont.fnt");
     QualityInput->setString("1");
