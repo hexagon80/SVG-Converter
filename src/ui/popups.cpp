@@ -173,35 +173,3 @@ ImportPopup::CloseEvent ImportPopup::getListenForClose() {
 std::pair<Parser, Renderer> ImportPopup::getSettings(){
     return {m_parser, m_renderer};
 }
-
-ErrorPopup* ErrorPopup::create(const gd::string& str) {
-    auto ret = new ErrorPopup;
-    if (ret && ret->init(str)) {
-        ret->autorelease();
-        return ret;
-    }
-    CC_SAFE_DELETE(ret);
-    return nullptr;
-}
-
-bool ErrorPopup::init(const gd::string& str) {
-    if (!Popup::init(370.f, 300.f, "GJ_square05.png"))
-        return false;
-
-    m_bgSprite->setColor(ccColor3B(191, 17, 66));
-
-    auto h1 = CCLabelBMFont::create("ERROR", "goldFont.fnt");
-    h1->setScale(1.25f);
-    h1->setPosition(275.f, 282.f);
-    this->addChild(h1);
-
-    auto txt = TextArea::create(str, "chatFont.fnt", 0.8f, 300.f, {0.5f, 0.5f}, 20.f, false);
-    txt->setPosition({325.f, 240.f});
-
-    this->addChild(txt);
-    return true;
-}
-
-ErrorPopup::CloseEvent ErrorPopup::getListenForClose() {
-    return listenForClose();
-}

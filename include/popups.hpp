@@ -29,15 +29,3 @@ protected:
     void onQualityInput(CCObject*);
     void onLayerInput(CCObject*);
 };
-
-class ErrorPopup : public geode::Popup {
-public:
-    static ErrorPopup* create(const gd::string& str);
-    
-    ImportPopup::CloseEvent getListenForClose();
-
-private:
-    gd::string m_text = "";
-
-    bool init(const gd::string& str);
-};

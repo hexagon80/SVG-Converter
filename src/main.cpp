@@ -2,7 +2,6 @@
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <svg.hpp>
 #include <popups.hpp>
-#include <errors.hpp>
 
 // TODO: Add drag & drop api implementation
 
@@ -104,9 +103,7 @@ public:
 
         auto popup = ImportPopup::create(p, r);
 
-        if (!popup) {
-            return;
-        }
+        if (!popup) return;
 
         popup->setID("import-popup"_spr);
 
@@ -141,22 +138,14 @@ public:
         });
     }
 
-    void onErrorPopup(gd::string text) {
+    void onError(gd::string text) {
         CleanFields();
-        auto popup = ErrorPopup::create(text);
+        auto notification = Notification::create(text, NotificationIcon::Error, 1.f);
+        if (!notification) return;
 
-        if (!popup) return;
+        notification->show();
 
-        popup->m_noElasticity = true;
-
-        popup->show();
-
-        m_fields->isPopUpActive = true;
-
-        m_fields->errorPopupListener = popup->getListenForClose().listen([this]() {
-            m_fields->isPopUpActive = false;
-            return ListenerResult::Propagate;
-        });
+        log::warn("{}", text);
     }
 
     void Import(CCObject* sender){
@@ -199,7 +188,7 @@ public:
                 if (LevelEditorLayer::get() != this) return;
 
                 if (res.isErr()) {
-                    onErrorPopup(res.unwrapErr());
+                    onError(res.unwrapErr());
                     return;
                 };
                 auto& render = res.unwrap();
@@ -208,17 +197,17 @@ public:
                 auto& usedColors = render.usedColors;
 
                 if (commands.empty()) {
-                    onErrorPopup("Failed to parse the SVG file. Please check the file format.");
+                    onError("Failed to parse the SVG!");
                     return;
                 }
 
                 if (render.commands.size() > 50000) {
-                    onErrorPopup(ERR_TOO_MUCH_OBJECTS);
+                    onError("Error - Too much objects!");
                     return;
                 };
 
                 if (usedColors.size() + getNextColorChannel() > 999) {
-                    onErrorPopup(ERR_COLOR_LIMIT_REACHED);
+                    onError("Error - Not enough colors!");
                     return;
                 }
 
@@ -239,12 +228,14 @@ public:
                 m_fields->ObjsPlaced = CCArray::create();
                 m_fields->ObjsPlaced->retain();
 
-                auto bar = ProgressBar::create();
+                auto bar = ProgressBar::create(ProgressBarStyle::Slider);
                 bar->setZOrder(101);
                 bar->setPosition({280.f, 120.f});
                 bar->setFillColor({0, 140, 255});
                 bar->setID("progress-bar"_spr);
                 bar->setAnchorPoint({0.5f, 0.5f});
+                bar->updateProgress(0.0f);
+
                 this->addChild(bar);
 
                 schedule(schedule_selector(MyEditorHook::PlaceObjects));
@@ -292,6 +283,11 @@ public:
         const auto& commands = m_fields->ObjsToPlace;
 
         auto bar = static_cast<ProgressBar*>(this->getChildByID("progress-bar"_spr));
+        if (!bar) {
+            log::warn("bar null");
+            unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+            return;
+        }
 
         for (int i = 0; i < PER_TICK && m_fields->placeIndex < commands.size(); i++) {
             auto& command = commands[m_fields->placeIndex++];
@@ -305,7 +301,7 @@ public:
                 // This one might be caused beacuse of limit object reached
                 unschedule(schedule_selector(MyEditorHook::PlaceObjects));
                 bar->removeFromParent();
-                onErrorPopup(ERR_UNKNOW);
+                onError("Error - Unknow error!");
                 return;
             };
 
@@ -326,14 +322,21 @@ public:
             }
 
             m_fields->ObjsPlaced->addObject(obj);
-            bar->updateProgress((float)m_fields->placeIndex / commands.size() * 100.0f);
+            bar->updateProgress((float)m_fields->placeIndex / commands.size() * 100.f);
         }
 
         if (m_fields->placeIndex >= commands.size()) {
             unschedule(schedule_selector(MyEditorHook::PlaceObjects));
+
             groupStickyObjects(m_fields->ObjsPlaced);
-            CleanFields();
+
             bar->removeFromParent();
+
+            auto notification = Notification::create("Imported!", NotificationIcon::Success, 1.f);
+            if (notification) notification->show();
+
+            CleanFields();
+
             log::info("finished!");
         }
     }
