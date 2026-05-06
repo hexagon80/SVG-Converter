@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.5
+
+- fixed holes ignored
+- added a progress bar, and a success/error notification
+- node ids now prefixed
+- added a setting to change the generation speed
+
 ## 0.1.0-beta.4
 
 - fixed schedule while exited editor, for debugging.

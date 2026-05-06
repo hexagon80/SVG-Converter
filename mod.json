@@ -1,11 +1,11 @@
 {
-	"geode": "5.6.1",
+	"geode": "5.7.1",
 	"gd": {
 		"win": "2.2081"
 	},
 	"id": "hexagon80.svg-converter",
 	"name": "SVG Converter",
-	"version": "0.1.0-beta.4",
+	"version": "0.1.0-beta.5",
 	"developer": "Hexagon80",
 	"links": { "source": "https://github.com/hexagon80/SVG-Converter" },
 	"description": "Converts SVG files  into objects",
