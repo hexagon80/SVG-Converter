@@ -229,14 +229,15 @@ public:
                 m_fields->ObjsPlaced->retain();
 
                 auto bar = ProgressBar::create(ProgressBarStyle::Slider);
-                bar->setZOrder(101);
-                bar->setPosition({280.f, 120.f});
-                bar->setFillColor({0, 140, 255});
-                bar->setID("progress-bar"_spr);
-                bar->setAnchorPoint({0.5f, 0.5f});
-                bar->updateProgress(0.0f);
+                if (bar) {
+                    bar->setZOrder(101);
+                    bar->setPosition({280.f, 120.f});
+                    bar->setID("progress-bar"_spr);
+                    bar->setAnchorPoint({0.5f, 0.5f});
+                    bar->updateProgress(0.0f);
 
-                this->addChild(bar);
+                    this->addChild(bar);
+                }
 
                 schedule(schedule_selector(MyEditorHook::PlaceObjects));
             }
@@ -322,7 +323,7 @@ public:
             }
 
             m_fields->ObjsPlaced->addObject(obj);
-            bar->updateProgress((float)m_fields->placeIndex / commands.size() * 100.f);
+            bar->updateProgress(static_cast<float>(m_fields->placeIndex) / commands.size() * 100.f);
         }
 
         if (m_fields->placeIndex >= commands.size()) {

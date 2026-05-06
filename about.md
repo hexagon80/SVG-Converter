@@ -14,6 +14,8 @@ Do not dm me for those.
 
 * This mod generates a lot of objects, and it will create 1:1 colors. If your file has 700 colors, that's 700 new colors in your level!
 
+* Don't skip the editor while generating! the process will stop and creates even more colors.
+
 * Gradients are naturally impossible.
 
 * Maximum of 50.000 objects.
